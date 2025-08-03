@@ -13,7 +13,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = Bearer ${token}; // Fixed: Use backticks for template literal
+      config.headers.Authorization = Bearer ${token}; // Use backticks for template literal
     }
     return config;
   },
