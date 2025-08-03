@@ -1,19 +1,19 @@
 import axios from 'axios';
 
-// Create Axios instance
+// Create an Axios instance
 const axiosInstance = axios.create({
-  baseURL: 'https://holuweb.onrender.com/api',
+  baseURL: 'https://example.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to attach token
+// Add a request interceptor to attach a token
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = Bearer ${token}; // Use backticks for template literal
+      config.headers.Authorization = Bearer ${token}; // Correct syntax with backticks
     }
     return config;
   },
