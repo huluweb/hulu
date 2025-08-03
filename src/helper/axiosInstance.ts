@@ -1,7 +1,8 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
-// Create Axios instance with TypeScript
-const axiosInstance: AxiosInstance = axios.create({
+// Create Axios instance
+const axiosInstance = axios.create({
   baseURL: 'https://holuweb.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
@@ -10,17 +11,14 @@ const axiosInstance: AxiosInstance = axios.create({
 
 // Add request interceptor to attach token
 axiosInstance.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
-    // Check if window is defined (client-side only)
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token && config.headers) {
-        config.headers.Authorization = Bearer ${token};
-      }
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = Bearer ${token};
     }
     return config;
   },
-  (error: AxiosError) => {
+  (error) => {
     return Promise.reject(error);
   }
 );
