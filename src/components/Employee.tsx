@@ -102,23 +102,23 @@ const Applicants: React.FC = () => {
     }
   }, [editingApplicant]);
 
-  const filteredApplicants = applicants.filter(applicant => {
-    if (!applicant || typeof applicant !== 'object' || !applicant.name) {
-      return false;
-    }
+ const filteredApplicants = applicants.filter(applicant => {
+  if (!applicant || typeof applicant !== 'object' || !applicant.name) {
+    return false;
+  }
 
-    const matchesSearch = 
-      (applicant.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (applicant.position || '').toLowerCase().includes(searchTerm.toLowerCase());
-      (applicant.phone || '').toLowerCase().includes(searchTerm.toLowerCase());
-    (applicant.gender || '').toLowerCase().includes(searchTerm.toLowerCase());
-    (applicant.location || '').toLowerCase().includes(searchTerm.toLowerCase());
-    (applicant.experience || '').toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesSearch = 
+    (applicant.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (applicant.position || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (applicant.phone || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (applicant.gender || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (applicant.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (applicant.experience || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (applicant.jobType || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
+  const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+  return matchesSearch && matchesStatus;
+});
   const statusOptions = ['All', 'Review', 'Interview', 'NO', 'YES'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
