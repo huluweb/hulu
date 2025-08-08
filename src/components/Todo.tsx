@@ -172,7 +172,7 @@ const updateTask = async () => {
       `https://holuweb.onrender.com/api/tasks/${editingTask._id}`,
       updatedTask
     );
-
+     console.log(response)
     setTasks(tasks.map(task => task._id === editingTask._id ? response.data.task : task));
     setEditingTask(null);
     setNewTaskText('');
