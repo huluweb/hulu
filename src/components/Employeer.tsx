@@ -66,7 +66,9 @@ const Employeer: React.FC = () => {
 
   const filteredEmployees = employees.filter(employee => 
     (employee.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (employee.companyName || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (employee.companyName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (employee.phone || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (employee.address || '').toLowerCase().includes(searchTerm.toLowerCase()) 
   );
 
   return (
