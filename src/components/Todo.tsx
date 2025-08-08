@@ -143,55 +143,68 @@ const TodoApp: React.FC = () => {
       setIsLoading(false);
     }
   };
+const updateTask = async () => {
+  if (!editingTask || editingTask.text.trim() === '') {
+    toast.error('Task description is required', {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    return;
+  }
 
-  const updateTask = async () => {
-    if (!editingTask || editingTask.text.trim() === '') {
-      toast.error('Task description is required', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
+  setIsLoading(true);
+  try {
+    // Construct the request body with all required fields
+    const updatedTask = {
+      text: editingTask.text.trim(),
+      assignedTo: editingTask.assignedTo || getAssignableUsers()[0]?.id || activeUser,
+      completed: editingTask.completed ?? false,
+      assignedBy: editingTask.assignedBy || activeUser,
+      date: editingTask.date || new Date().toISOString().split('T')[0],
+    };
+
+    console.log('Updating task with data:', updatedTask); // Debug log
+    const response = await axiosInstance.put(
+      `https://holuweb.onrender.com/api/tasks/${editingTask._id}`,
+      updatedTask
+    );
+
+    setTasks(tasks.map(task => task._id === editingTask._id ? response.data.task : task));
+    setEditingTask(null);
+    setNewTaskText('');
+    setAssignedTo(getAssignableUsers()[0]?.id || '');
+    toast.success('Task updated successfully', {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } catch (error) {
+    let errorMessage = 'Failed to update task';
+    if (error instanceof AxiosError) {
+      errorMessage = error.response?.data?.message || errorMessage;
+      console.error('Error response:', error.response?.data); // Debug log
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
     }
-
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.put(`https://holuweb.onrender.com/api/tasks/${editingTask._id}`, editingTask);
-      setTasks(tasks.map(task => task._id === editingTask._id ? response.data.task : task));
-      setEditingTask(null);
-      setNewTaskText('');
-      setAssignedTo(getAssignableUsers()[0]?.id || '');
-      toast.success('Task updated successfully', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    } catch (error) {
-      let errorMessage = 'Failed to update task';
-      if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || errorMessage;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+    toast.error(errorMessage, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   const deleteTask = async (id: string) => {
     setIsLoading(true);
     try {
