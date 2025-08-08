@@ -176,6 +176,16 @@ const Applicants: React.FC = () => {
             text: `We noticed a new Employee added.\nTime: ${new Date().toLocaleString()}\nLocation: Addis Ababa, Ethiopia (approximate)`,
           }),
         });
+        setNewApplicant({
+        name: '',
+        position: '',
+        status: 'Review',
+        jobType: '',
+        location: '',
+        experience: '',
+        gender: '', // Default to 'M'
+        phone: '',
+      });
       }
       setShowForm(false);
       setEditingApplicant(null);
