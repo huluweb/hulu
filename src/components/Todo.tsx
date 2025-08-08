@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { HiPlus, HiMenu, HiTrash, HiCheckCircle, HiUser, HiOutlineSearch } from 'react-icons/hi';
+import { HiPlus, HiMenu, HiTrash, HiCheckCircle, HiUser, HiOutlineSearch, HiPencil } from 'react-icons/hi';
 import axiosInstance from '@/helper/axiosInstance';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,7 +29,7 @@ const TodoApp: React.FC = () => {
     { id: 'eldana', name: 'Eldana', role: 'employee' },
     { id: 'eyerus', name: 'Eyerus', role: 'employee' },
     { id: 'kaleab', name: 'Kaleab', role: 'employee' },
-    { id: 'meskerem', name: 'Meskerem', role: 'employee' },
+    { id: 'hulu', name: 'Hulu', role: 'employee' },
   ];
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -39,21 +39,17 @@ const TodoApp: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const currentUser = users.find(user => user.id === activeUser);
   const isAdmin = currentUser?.role === 'admin';
 
   const getAssignableUsers = () => {
     if (isAdmin) {
-      return users;
-    } else if (['eyerus', 'eldana', 'biruk', 'blen'].includes(activeUser)) {
-      return users.filter(user => user.id === 'abush');
-    } else if (activeUser === 'kaleab') {
-      return users.filter(user => user.id === 'abush' || user.id === 'meskerem');
-    } else if (activeUser === 'meskerem') {
-      return users.filter(user => user.id === 'abush' || user.id === 'kaleab');
+      return users; // Admin can assign to anyone
     }
-    return [];
+    // All users can assign to Abush and Hulu
+    return users.filter(user => user.id === 'abush' || user.id === 'hulu');
   };
 
   useEffect(() => {
@@ -148,6 +144,54 @@ const TodoApp: React.FC = () => {
     }
   };
 
+  const updateTask = async () => {
+    if (!editingTask || editingTask.text.trim() === '') {
+      toast.error('Task description is required', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.put(`https://holuweb.onrender.com/api/tasks/${editingTask._id}`, editingTask);
+      setTasks(tasks.map(task => task._id === editingTask._id ? response.data.task : task));
+      setEditingTask(null);
+      setNewTaskText('');
+      setAssignedTo(getAssignableUsers()[0]?.id || '');
+      toast.success('Task updated successfully', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (error) {
+      let errorMessage = 'Failed to update task';
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const deleteTask = async (id: string) => {
     setIsLoading(true);
     try {
@@ -216,6 +260,18 @@ const TodoApp: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const startEditing = (task: Task) => {
+    setEditingTask(task);
+    setNewTaskText(task.text);
+    setAssignedTo(task.assignedTo);
+  };
+
+  const cancelEditing = () => {
+    setEditingTask(null);
+    setNewTaskText('');
+    setAssignedTo(getAssignableUsers()[0]?.id || '');
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -323,7 +379,7 @@ const TodoApp: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                {currentUser?.name}s Tasks
+                {currentUser?.name}'s Tasks
               </h1>
               <p className="text-sm text-gray-600">
                 {isAdmin 
@@ -335,11 +391,13 @@ const TodoApp: React.FC = () => {
           </div>
         </div>
 
-        {/* Task creation form */}
+        {/* Task creation/edit form */}
         {getAssignableUsers().length > 0 && (
           <div className="bg-blue-50 border-b border-blue-100 p-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-lg font-medium text-blue-800 mb-3">Assign New Task</h2>
+              <h2 className="text-lg font-medium text-blue-800 mb-3">
+                {editingTask ? 'Edit Task' : 'Assign New Task'}
+              </h2>
               <div className="flex flex-col gap-3">
                 <input
                   type="text"
@@ -347,7 +405,7 @@ const TodoApp: React.FC = () => {
                   onChange={(e) => setNewTaskText(e.target.value)}
                   placeholder="Enter task description..."
                   className="flex-1 border text-black border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
-                  onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                  onKeyPress={(e) => e.key === 'Enter' && (editingTask ? updateTask() : addTask())}
                   disabled={isLoading}
                 />
                 
@@ -366,15 +424,26 @@ const TodoApp: React.FC = () => {
                   </select>
                   
                   <button
-                    onClick={addTask}
+                    onClick={editingTask ? updateTask : addTask}
                     className={`bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center justify-center hover:bg-blue-700 transition-colors ${
                       isLoading ? 'opacity-50 cursor-not-allowed' : ''
                     } text-sm md:text-base`}
                     disabled={isLoading}
                   >
                     <HiPlus className="w-4 h-4 md:w-5 md:h-5" />
-                    <span className="ml-1">Assign</span>
+                    <span className="ml-1">{editingTask ? 'Update' : 'Assign'}</span>
                   </button>
+                  {editingTask && (
+                    <button
+                      onClick={cancelEditing}
+                      className={`bg-gray-600 text-white rounded-lg px-4 py-2 flex items-center justify-center hover:bg-gray-700 transition-colors ${
+                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      } text-sm md:text-base`}
+                      disabled={isLoading}
+                    >
+                      <span className="ml-1">Cancel</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -399,9 +468,7 @@ const TodoApp: React.FC = () => {
               </div>
             ) : filteredTasks.length === 0 ? (
               <div className="text-center py-10">
-                <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl w-16 h-16 mx-auto flex items-center justify-center">
-                  <HiCheckCircle className="w-8 h-8 text-gray-400" />
-                </div>
+                <div className="bg tys://i.imgur.com/pXyqW4v.png" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900">No tasks found</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {getAssignableUsers().length > 0
@@ -468,17 +535,30 @@ const TodoApp: React.FC = () => {
                         </div>
                       </div>
 
-                      {isAdmin && (
-                        <button
-                          onClick={() => deleteTask(task._id)}
-                          className={`text-gray-400 hover:text-red-500 p-1 ml-2 ${
-                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                          disabled={isLoading}
-                        >
-                          <HiTrash className="w-5 h-5" />
-                        </button>
-                      )}
+                      <div className="flex gap-2 ml-2">
+                        {(isAdmin || task.assignedBy === activeUser) && (
+                          <button
+                            onClick={() => startEditing(task)}
+                            className={`text-gray-400 hover:text-blue-500 p-1 ${
+                              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            disabled={isLoading}
+                          >
+                            <HiPencil className="w-5 h-5" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() => deleteTask(task._id)}
+                            className={`text-gray-400 hover:text-red-500 p-1 ${
+                              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            disabled={isLoading}
+                          >
+                            <HiTrash className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
