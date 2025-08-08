@@ -517,7 +517,7 @@ const TodoApp: React.FC = () => {
 
                       <div className="flex-1 min-w-0">
                         <p 
-                          className={`${task.completed ? 'text-gray-500' : 'text-gray-800'} text-sm md:text-base `}
+                          className={`${task.completed ? 'text-gray-500' : 'text-gray-800'} text-sm md:text-base max-w-full break-words`}
                         >
                           {task.text}
                         </p>
