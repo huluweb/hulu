@@ -110,7 +110,11 @@ const Applicants: React.FC = () => {
     const matchesSearch = 
       (applicant.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (applicant.position || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
+      (applicant.phone || '').toLowerCase().includes(searchTerm.toLowerCase());
+    (applicant.gender || '').toLowerCase().includes(searchTerm.toLowerCase());
+    (applicant.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+    (applicant.experience || '').toLowerCase().includes(searchTerm.toLowerCase());
+    (applicant.jobType || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
